@@ -424,6 +424,7 @@ s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 b incPC
 
 :MEM
+/\nMEM_ADDRESS ([01]*)00\n/!q 2
 G
 s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\2 ([01]*))/\1\5\4/
 s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 ([01]*)\n.*~.*\n\2 )[01]*/\1\4/
