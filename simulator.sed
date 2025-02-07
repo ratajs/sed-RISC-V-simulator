@@ -81,6 +81,7 @@ G;s/^INST [01]*(\n.*\nPC ([01]*00)\n.*~).*\n\2 ([01]*)\n.*/INST \3\1/;t decode;q
 /^INST [01]*1101111\n/b jal
 /^INST [01]*000[01]{5}1100111\n/b jalr
 /^INST 00000000000100000000000001110011\n/b ebreak
+/^INST 00000000000000000000000001110011\n/b ecall
 q 2
 
 :addi
@@ -228,6 +229,19 @@ s/^1101$/d/gm
 s/^1110$/e/gm
 s/^1111$/f/gm
 s/\n//g;s/.{8}/&\n/g;s/\n*$//;p;q
+
+:ecall
+/\n10001 00000000000000000000000000001010\n/q
+/\n10001 00000000000000000000000000100010\n/{
+	G;h;s/.*\n01010 ([01]*)\n.*/\1/;t printHex;q 2
+}
+/\n10001 00000000000000000000000000100011\n/{
+	G;h;s/.*\n01010 ([01]*)\n.*/\1/;t printBin;q 2
+}
+/\n10001 00000000000000000000000000100100\n/{
+	G;h;s/.*\n01010 ([01]*)\n.*/\1/;t printDec;q 2
+}
+q 3
 
 :incPC
 /\nPC 1{30}/q 2;s/\nPC ([01]*)01*00\n/\nPC \110000000000000000000000000000000\n/;s/\nPC ([01]{32})0*\n/\nPC \1\n/;t fetch;q 2
@@ -415,3 +429,156 @@ s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\2 ([01]
 s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 ([01]*)\n.*~.*\n\2 )[01]*/\1\4/
 h;x;s/.*~\n//;x;s/~.*/~/;s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 t incPC;q 2
+
+:printHex
+s/[01]{4}/&\n/g
+s/^0000$/0/gm
+s/^0001$/1/gm
+s/^0010$/2/gm
+s/^0011$/3/gm
+s/^0100$/4/gm
+s/^0101$/5/gm
+s/^0110$/6/gm
+s/^0111$/7/gm
+s/^1000$/8/gm
+s/^1001$/9/gm
+s/^1010$/a/gm
+s/^1011$/b/gm
+s/^1100$/c/gm
+s/^1101$/d/gm
+s/^1110$/e/gm
+s/^1111$/f/gm
+s/\n//g
+p;g;s/.*~\n//;x;s/~\n.*/~/;t incPC;q 2
+
+:printBin
+p;g;s/.*~\n//;x;s/~\n.*/~/;t incPC;q 2
+
+:printDec
+s/$/\
+2147483648\
+1073741824\
+536870912\
+268435456\
+134217728\
+67108864\
+33554432\
+16777216\
+8388608\
+4194304\
+2097152\
+1048576\
+524288\
+262144\
+131072\
+65536\
+32768\
+16384\
+8192\
+4096\
+2048\
+1024\
+512\
+256\
+128\
+64\
+32\
+16\
+8\
+4\
+2\
+1/
+t printDecBit;q 2
+:printDecBit
+s/^0([01]*)\n[0-9]*/\1/;t printDecBit
+s/^1([01]*)\n([0-9]*)(.*)/\1\3\n\2/;t printDecBit
+s/^\n/=/;y/\n/,/;s/^$/=0/;t printDecDigit
+q 2
+:printDecDigit
+s/0,([0-9]*)([^0,])(,|$)/\2,\10\3/;t printDecDigit
+s/1,([0-9]*)1(,|$)/2,\10\2/;t printDecDigit
+s/1,([0-9]*)2(,|$)/3,\10\2/;t printDecDigit
+s/1,([0-9]*)3(,|$)/4,\10\2/;t printDecDigit
+s/1,([0-9]*)4(,|$)/5,\10\2/;t printDecDigit
+s/1,([0-9]*)5(,|$)/6,\10\2/;t printDecDigit
+s/1,([0-9]*)6(,|$)/7,\10\2/;t printDecDigit
+s/1,([0-9]*)7(,|$)/8,\10\2/;t printDecDigit
+s/1,([0-9]*)8(,|$)/9,\10\2/;t printDecDigit
+s/1,([0-9]*)9(,|$)/0,10,\10\2/;t printDecDigit
+s/2,([0-9]*)1(,|$)/3,\10\2/;t printDecDigit
+s/2,([0-9]*)2(,|$)/4,\10\2/;t printDecDigit
+s/2,([0-9]*)3(,|$)/5,\10\2/;t printDecDigit
+s/2,([0-9]*)4(,|$)/6,\10\2/;t printDecDigit
+s/2,([0-9]*)5(,|$)/7,\10\2/;t printDecDigit
+s/2,([0-9]*)6(,|$)/8,\10\2/;t printDecDigit
+s/2,([0-9]*)7(,|$)/9,\10\2/;t printDecDigit
+s/2,([0-9]*)8(,|$)/0,10,\10\2/;t printDecDigit
+s/2,([0-9]*)9(,|$)/1,10,\10\2/;t printDecDigit
+s/3,([0-9]*)1(,|$)/4,\10\2/;t printDecDigit
+s/3,([0-9]*)2(,|$)/5,\10\2/;t printDecDigit
+s/3,([0-9]*)3(,|$)/6,\10\2/;t printDecDigit
+s/3,([0-9]*)4(,|$)/7,\10\2/;t printDecDigit
+s/3,([0-9]*)5(,|$)/8,\10\2/;t printDecDigit
+s/3,([0-9]*)6(,|$)/9,\10\2/;t printDecDigit
+s/3,([0-9]*)7(,|$)/0,10,\10\2/;t printDecDigit
+s/3,([0-9]*)8(,|$)/1,10,\10\2/;t printDecDigit
+s/3,([0-9]*)9(,|$)/1,10,\10\2/;t printDecDigit
+s/4,([0-9]*)1(,|$)/5,\10\2/;t printDecDigit
+s/4,([0-9]*)2(,|$)/6,\10\2/;t printDecDigit
+s/4,([0-9]*)3(,|$)/7,\10\2/;t printDecDigit
+s/4,([0-9]*)4(,|$)/8,\10\2/;t printDecDigit
+s/4,([0-9]*)5(,|$)/9,\10\2/;t printDecDigit
+s/4,([0-9]*)6(,|$)/0,10,\10\2/;t printDecDigit
+s/4,([0-9]*)7(,|$)/1,10,\10\2/;t printDecDigit
+s/4,([0-9]*)8(,|$)/2,10,\10\2/;t printDecDigit
+s/4,([0-9]*)9(,|$)/3,10,\10\2/;t printDecDigit
+s/5,([0-9]*)1(,|$)/6,\10\2/;t printDecDigit
+s/5,([0-9]*)2(,|$)/7,\10\2/;t printDecDigit
+s/5,([0-9]*)3(,|$)/8,\10\2/;t printDecDigit
+s/5,([0-9]*)4(,|$)/9,\10\2/;t printDecDigit
+s/5,([0-9]*)5(,|$)/0,10,\10\2/;t printDecDigit
+s/5,([0-9]*)6(,|$)/1,10,\10\2/;t printDecDigit
+s/5,([0-9]*)7(,|$)/2,10,\10\2/;t printDecDigit
+s/5,([0-9]*)8(,|$)/3,10,\10\2/;t printDecDigit
+s/5,([0-9]*)9(,|$)/4,10,\10\2/;t printDecDigit
+s/6,([0-9]*)1(,|$)/7,\10\2/;t printDecDigit
+s/6,([0-9]*)2(,|$)/8,\10\2/;t printDecDigit
+s/6,([0-9]*)3(,|$)/9,\10\2/;t printDecDigit
+s/6,([0-9]*)4(,|$)/0,10,\10\2/;t printDecDigit
+s/6,([0-9]*)5(,|$)/1,10,\10\2/;t printDecDigit
+s/6,([0-9]*)6(,|$)/2,10,\10\2/;t printDecDigit
+s/6,([0-9]*)7(,|$)/3,10,\10\2/;t printDecDigit
+s/6,([0-9]*)8(,|$)/4,10,\10\2/;t printDecDigit
+s/6,([0-9]*)9(,|$)/5,10,\10\2/;t printDecDigit
+s/7,([0-9]*)1(,|$)/8,\10\2/;t printDecDigit
+s/7,([0-9]*)2(,|$)/8,\10\2/;t printDecDigit
+s/7,([0-9]*)3(,|$)/0,10,\10\2/;t printDecDigit
+s/7,([0-9]*)4(,|$)/1,10,\10\2/;t printDecDigit
+s/7,([0-9]*)5(,|$)/2,10,\10\2/;t printDecDigit
+s/7,([0-9]*)6(,|$)/3,10,\10\2/;t printDecDigit
+s/7,([0-9]*)7(,|$)/4,10,\10\2/;t printDecDigit
+s/7,([0-9]*)8(,|$)/5,10,\10\2/;t printDecDigit
+s/7,([0-9]*)9(,|$)/6,10,\10\2/;t printDecDigit
+s/8,([0-9]*)1(,|$)/9,\10\2/;t printDecDigit
+s/8,([0-9]*)2(,|$)/0,10,\10\2/;t printDecDigit
+s/8,([0-9]*)3(,|$)/1,10,\10\2/;t printDecDigit
+s/8,([0-9]*)4(,|$)/2,10,\10\2/;t printDecDigit
+s/8,([0-9]*)5(,|$)/3,10,\10\2/;t printDecDigit
+s/8,([0-9]*)6(,|$)/4,10,\10\2/;t printDecDigit
+s/8,([0-9]*)7(,|$)/5,10,\10\2/;t printDecDigit
+s/8,([0-9]*)8(,|$)/6,10,\10\2/;t printDecDigit
+s/8,([0-9]*)9(,|$)/7,10,\10\2/;t printDecDigit
+s/9,([0-9]*)1(,|$)/0,10,\10\2/;t printDecDigit
+s/9,([0-9]*)2(,|$)/1,10,\10\2/;t printDecDigit
+s/9,([0-9]*)3(,|$)/2,10,\10\2/;t printDecDigit
+s/9,([0-9]*)4(,|$)/3,10,\10\2/;t printDecDigit
+s/9,([0-9]*)5(,|$)/4,10,\10\2/;t printDecDigit
+s/9,([0-9]*)6(,|$)/5,10,\10\2/;t printDecDigit
+s/9,([0-9]*)7(,|$)/6,10,\10\2/;t printDecDigit
+s/9,([0-9]*)8(,|$)/7,10,\10\2/;t printDecDigit
+s/9,([0-9]*)9(,|$)/8,10,\10\2/;t printDecDigit
+s/([0-9]*)=([0-9]*)([0-9])(,|$)/\3\1=\20\4/
+s/0(,|$)/\1/g;s/,+/,/g
+/=,?$/!t printDecDigit
+s/=,?$//
+p;g;s/.*~\n//;x;s/~\n.*/~/;t incPC;q 2
