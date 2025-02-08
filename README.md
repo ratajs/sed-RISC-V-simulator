@@ -29,7 +29,13 @@ Currently supported instructions:
 * bge
 * bgeu
 * lw
+* lh
+* lhu
+* lb
+* lbu
 * sw
+* sh
+* sb
 * lui
 * jal
 * jalr

@@ -16,6 +16,7 @@ ALU_A \
 ALU_B \
 ALU_DEST \
 \
+MEM_MODE w\
 MEM_ADDRESS \
 MEM_READ_DEST \
 MEM_WRITE_SRC \
@@ -86,7 +87,13 @@ G;s/^INST [01]*(\n.*\nPC ([01]*00)\n.*~).*\n\2 ([01]*)\n.*/INST \3\1/;t decode;q
 /^INST [01]*101[01]{5}1100011\n/b bge
 /^INST [01]*111[01]{5}1100011\n/b bgeu
 /^INST [01]*010[01]{5}0000011\n/b lw
+/^INST [01]*001[01]{5}0000011\n/b lh
+/^INST [01]*101[01]{5}0000011\n/b lhu
+/^INST [01]*000[01]{5}0000011\n/b lb
+/^INST [01]*100[01]{5}0000011\n/b lbu
 /^INST [01]*010[01]{5}0100011\n/b sw
+/^INST [01]*001[01]{5}0100011\n/b sh
+/^INST [01]*000[01]{5}0100011\n/b sb
 /^INST [01]*0110111\n/b lui
 /^INST [01]*1101111\n/b jal
 /^INST [01]*000[01]{5}1100111\n/b jalr
@@ -251,11 +258,35 @@ b incPC
 b incPC
 
 :lw
-s/(^INST ([01])([01]{11})([01]{5})010([01]{5})0000011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\4 ([01]*)\n)/\1ALU_A \7\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\nALU_DEST MEM_ADDRESS\n\nMEM_ADDRESS \nMEM_READ_DEST \5\nMEM_WRITE_SRC \6/
+s/(^INST ([01])([01]{11})([01]{5})010([01]{5})0000011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\4 ([01]*)\n)/\1ALU_A \7\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\nALU_DEST MEM_ADDRESS\n\nMEM_MODE w\nMEM_ADDRESS \nMEM_READ_DEST \5\nMEM_WRITE_SRC \6/
+t ALU+;q 2
+
+:lh
+s/(^INST ([01])([01]{11})([01]{5})001([01]{5})0000011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\4 ([01]*)\n)/\1ALU_A \7\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\nALU_DEST MEM_ADDRESS\n\nMEM_MODE h\nMEM_ADDRESS \nMEM_READ_DEST \5\nMEM_WRITE_SRC \6/
+t ALU+;q 2
+
+:lhu
+s/(^INST ([01])([01]{11})([01]{5})101([01]{5})0000011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\4 ([01]*)\n)/\1ALU_A \7\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\nALU_DEST MEM_ADDRESS\n\nMEM_MODE hu\nMEM_ADDRESS \nMEM_READ_DEST \5\nMEM_WRITE_SRC \6/
+t ALU+;q 2
+
+:lb
+s/(^INST ([01])([01]{11})([01]{5})000([01]{5})0000011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\4 ([01]*)\n)/\1ALU_A \7\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\nALU_DEST MEM_ADDRESS\n\nMEM_MODE b\nMEM_ADDRESS \nMEM_READ_DEST \5\nMEM_WRITE_SRC \6/
+t ALU+;q 2
+
+:lbu
+s/(^INST ([01])([01]{11})([01]{5})100([01]{5})0000011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\4 ([01]*)\n)/\1ALU_A \7\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\nALU_DEST MEM_ADDRESS\n\nMEM_MODE bu\nMEM_ADDRESS \nMEM_READ_DEST \5\nMEM_WRITE_SRC \6/
 t ALU+;q 2
 
 :sw
-s/(^INST ([01])([01]{6})([01]{5})([01]{5})010([01]{5})0100011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\5 ([01]*)\n)/\1ALU_A \8\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\6\nALU_DEST MEM_ADDRESS\n\nMEM_ADDRESS \nMEM_READ_DEST \nMEM_WRITE_SRC \4\7/
+s/(^INST ([01])([01]{6})([01]{5})([01]{5})010([01]{5})0100011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\5 ([01]*)\n)/\1ALU_A \8\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\6\nALU_DEST MEM_ADDRESS\n\nMEM_MODE w\nMEM_ADDRESS \nMEM_READ_DEST \nMEM_WRITE_SRC \4\7/
+t ALU+;q 2
+
+:sh
+s/(^INST ([01])([01]{6})([01]{5})([01]{5})001([01]{5})0100011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\5 ([01]*)\n)/\1ALU_A \8\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\6\nALU_DEST MEM_ADDRESS\n\nMEM_MODE h\nMEM_ADDRESS \nMEM_READ_DEST \nMEM_WRITE_SRC \4\7/
+t ALU+;q 2
+
+:sb
+s/(^INST ([01])([01]{6})([01]{5})([01]{5})000([01]{5})0100011\n.*\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*\n\nMEM_MODE [bhw]u?\nMEM_ADDRESS [01]*\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC [01]*(\n.*\n\5 ([01]*)\n)/\1ALU_A \8\nALU_B \2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\2\3\6\nALU_DEST MEM_ADDRESS\n\nMEM_MODE b\nMEM_ADDRESS \nMEM_READ_DEST \nMEM_WRITE_SRC \4\7/
 t ALU+;q 2
 
 :lui
@@ -496,10 +527,37 @@ s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 b incPC
 
 :MEM
-/\nMEM_ADDRESS ([01]*)00\n/!q 2
-G
-s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\2 ([01]*))/\1\5\4/
-s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 ([01]*)\n.*~.*\n\2 )[01]*/\1\4/
+/\nMEM_MODE w/{
+	/\nMEM_ADDRESS ([01]*)00\n/!q 2
+	G
+	s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\2 ([01]*))/\1\5\4/
+	s/(\nMEM_ADDRESS ([01]*)\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 ([01]*)\n.*~.*\n\2 )[01]*/\1\4/
+}
+/\nMEM_MODE h/{
+	/\nMEM_ADDRESS ([01]*)0\n/!q 2
+	G
+	s/(\nMEM_MODE h\nMEM_ADDRESS ([01]*)00\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 ([01])([01]{15}))/\1\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\6\4/
+	s/(\nMEM_MODE h\nMEM_ADDRESS ([01]*)10\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{16}([01])([01]{15}))/\1\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\6\4/
+	s/(\nMEM_MODE hu\nMEM_ADDRESS ([01]*)00\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 ([01]{16}))/\10000000000000000\5\4/
+	s/(\nMEM_MODE hu\nMEM_ADDRESS ([01]*)10\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{16}([01]{16}))/\10000000000000000\5\4/
+	s/(\nMEM_ADDRESS ([01]*)00\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 [01]*([01]{16})\n.*~.*\n\200 )[01]{16}/\1\4/
+	s/(\nMEM_ADDRESS ([01]*)10\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 [01]*([01]{16})\n.*~.*\n\200 [01]{16})[01]{16}/\1\4/
+}
+/\nMEM_MODE b/{
+	G
+	s/(\nMEM_MODE b\nMEM_ADDRESS ([01]*)00\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 ([01])([01]{7}))/\1\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\6\4/
+	s/(\nMEM_MODE b\nMEM_ADDRESS ([01]*)01\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{8}([01])([01]{7}))/\1\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\6\4/
+	s/(\nMEM_MODE b\nMEM_ADDRESS ([01]*)10\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{16}([01])([01]{7}))/\1\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\6\4/
+	s/(\nMEM_MODE b\nMEM_ADDRESS ([01]*)11\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{24}([01])([01]{7}))/\1\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\5\6\4/
+	s/(\nMEM_MODE bu\nMEM_ADDRESS ([01]*)00\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 ([01]{8}))/\1000000000000000000000000\5\4/
+	s/(\nMEM_MODE bu\nMEM_ADDRESS ([01]*)01\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{8}([01]{8}))/\1000000000000000000000000\5\4/
+	s/(\nMEM_MODE bu\nMEM_ADDRESS ([01]*)10\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{16}([01]{8}))/\1000000000000000000000000\5\4/
+	s/(\nMEM_MODE bu\nMEM_ADDRESS ([01]*)11\nMEM_READ_DEST ([01]+)\n.*\n\3 )[01]*(\n.*~.*\n\200 [01]{24}([01]{8}))/\1000000000000000000000000\5\4/
+	s/(\nMEM_ADDRESS ([01]*)00\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 [01]*([01]{8})\n.*~.*\n\200 )[01]{8}/\1\4/
+	s/(\nMEM_ADDRESS ([01]*)01\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 [01]*([01]{8})\n.*~.*\n\200 [01]{8})[01]{8}/\1\4/
+	s/(\nMEM_ADDRESS ([01]*)10\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 [01]*([01]{8})\n.*~.*\n\200 [01]{16})[01]{8}/\1\4/
+	s/(\nMEM_ADDRESS ([01]*)11\nMEM_READ_DEST [01]*\nMEM_WRITE_SRC ([01]+)\n.*\n\3 [01]*([01]{8})\n.*~.*\n\200 [01]{24})[01]{8}/\1\4/
+}
 h;x;s/.*~\n//;x;s/~.*/~/;s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 t incPC;q 2
 
