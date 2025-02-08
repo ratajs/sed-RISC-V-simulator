@@ -4,6 +4,12 @@ This `sed` script accepts a `.hex` file with one hexadecimal word (32 bits) per 
 
 Currently supported instructions: 
 * addi
+* andi
+* ori
+* xori
+* srli
+* srai
+* slli
 * add
 * sub
 * and
