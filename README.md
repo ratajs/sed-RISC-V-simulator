@@ -42,3 +42,4 @@ Currently supported instructions:
 * jalr
 * ebreak (stops the execution and dumps the memory content to the standard output)
 * ecall (a7 – call number, a0 – argument, supported call numbers: 10 – exit, 34 – print in hexadecimal, 35 – print in binary, 36 – print in decimal, all unsigned)
+* fence (does nothing)
