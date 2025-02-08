@@ -10,6 +10,8 @@ Currently supported instructions:
 * srli
 * srai
 * slli
+* slti
+* sltiu
 * add
 * sub
 * and
@@ -18,6 +20,8 @@ Currently supported instructions:
 * srl
 * sra
 * sll
+* slt
+* sltu
 * beq
 * bne
 * blt
