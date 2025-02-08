@@ -37,6 +37,7 @@ Currently supported instructions:
 * sh
 * sb
 * lui
+* auipc
 * jal
 * jalr
 * ebreak (stops the execution and dumps the memory content to the standard output)
