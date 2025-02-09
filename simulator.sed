@@ -350,6 +350,9 @@ s/\n//g;s/.{8}/&\n/g;s/\n*$//;p;q
 /\n10001 00000000000000000000000000100100\n/{
 	G;h;s/.*\n01010 ([01]*)\n.*/\1/;t printDec;q 2
 }
+/\n10001 00000000000000000000000000000001\n/{
+	G;h;s/.*\n01010 ([01]*)\n.*/\1/;t printSignedDec;q 2
+}
 q 3
 
 :fence
@@ -630,9 +633,9 @@ s/$/\
 1/
 t printDecBit;q 2
 :printDecBit
-s/^0([01]*)\n[0-9]*/\1/;t printDecBit
-s/^1([01]*)\n([0-9]*)(.*)/\1\3\n\2/;t printDecBit
-s/^\n/=/;y/\n/,/;s/^$/=0/;t printDecDigit
+s/^(−?)0([01]*)\n[0-9]*/\1\2/;t printDecBit
+s/^(−?)1([01]*)\n([0-9]*)(.*)/\1\2\4\n\3/;t printDecBit
+s/^(−?)\n/\1=/;y/\n/,/;s/^−?$/=0/;t printDecDigit
 q 2
 :printDecDigit
 s/0,([0-9]*)([^0,])(,|$)/\2,\10\3/
@@ -723,3 +726,10 @@ s/0(,|$)/\1/g;s/,+/,/g;s/(=),|,($)/\1/g
 /=$/!t printDecDigit
 s/=$//
 p;g;s/.*~\n//;x;s/~\n.*/~/;t incPC;q 2
+
+:printSignedDec
+s/^(1[01]*)1(0*)$/−\1:1\2/;t printSignedDecInv;b printDec
+:printSignedDecInv
+s/^−:/−/;t printDec
+s/0:/:1/;t printSignedDecInv
+s/1:/:0/;t printSignedDecInv
