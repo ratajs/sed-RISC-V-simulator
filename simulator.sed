@@ -740,17 +740,17 @@ s/1:/:0/;t printSignedDecInv
 
 :readDec
 $q 4;n
-/^[0-9]+$/!q 4
+/^[-−]?[0-9]+$/!q 4
+s/^[-−]/−\n/;t readDecDiv
 s/^/\n/;t readDecDiv;q 2
 :readDecDiv
 s/\n0+/\n/;t readDecDiv
 s/\n$//;t readDecDone
-/^[^\n]{33,}/q 4
-s/^/0/
+#/^−?[0-9]{32,}/q 4
+s/^(−?)/\10/
 /[13579]$/{
-	s/^0/1/
+	s/0/1/
 	s/1$/0/;s/3$/2/;s/5$/4/;s/7$/6/;s/9$/8/
-	s/\n/\n:/;t readDecDivDigit;q 2
 }
 s/\n/\n:/;t readDecDivDigit;q 2
 :readDecDivDigit
@@ -777,5 +777,14 @@ s/:_8/9:/;t readDecDivDigit
 s/:_9/9:_/;t readDecDivDigit
 q 2
 :readDecDone
-s/^/00000000000000000000000000000000/;s/^.*([01]{32})$/\1/
+s/^−?/&00000000000000000000000000000000/;s/^(−?)[01]*([01]{32})$/\1\2/;s/^−(0{32})$/\1/
+/^−/{
+	s/^−([01]*)1(0*)/\1:1\2/;t readDecInv;q 2
+	:readDecInv
+	s/^://;t readDecInvDone
+	s/^([01]*)0:/\1:1/;t readDecInv
+	s/^([01]*)1:/\1:0/;t readDecInv
+	q 2
+	:readDecInvDone
+}
 G;s/^([01]*)\n(.*\n01010 )[01]*\n/\2\1\n/;h;s/.*~//;x;s/~.*/~/;t incPC;q 2
