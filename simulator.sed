@@ -732,6 +732,7 @@ s/=$//
 p;g;s/.*~\n//;x;s/~\n.*/~/;t incPC;q 2
 
 :printSignedDec
+s/^10{31}$/−&/;t printDec
 s/^(1[01]*)1(0*)$/−\1:1\2/;t printSignedDecInv;b printDec
 :printSignedDecInv
 s/^−:/−/;t printDec
