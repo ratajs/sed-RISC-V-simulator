@@ -2,6 +2,8 @@
 
 This `sed` script accepts a `.hex` file with one hexadecimal word (32 bits) per line and starts executing it from the beginning.
 
+To support ecall 5 (input from stdin), run it with an extra `-` argument (for example `./simulator.sed ./mem.hex -`) and feed it with an extra newline after the memory content (an empty line at the end of the `.hex` file or an enter after running the command).
+
 Currently supported instructions: 
 * addi
 * andi
@@ -41,5 +43,5 @@ Currently supported instructions:
 * jal
 * jalr
 * ebreak (stops the execution and dumps the memory content to the standard output)
-* ecall (a7 – call number, a0 – argument, supported call numbers: 10 – exit, 34 – print in hexadecimal, 35 – print in binary, 36 – print in decimal, all unsigned, 1 – print in decimal, signed)
+* ecall (a7 – call number, a0 – argument, supported call numbers: 10 – exit, 34 – print in hexadecimal, 35 – print in binary, 36 – print in decimal, all unsigned, 1 – print in decimal, signed, 5 – read in decimal, unsigned)
 * fence (does nothing)

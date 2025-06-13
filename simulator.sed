@@ -1,4 +1,4 @@
-#!/bin/sed -Enf
+#!/usr/bin/env -S sed --sandbox -Enf
 
 s/^/00000000000000000000000000000000 /
 
@@ -7,7 +7,8 @@ s/[01]/000&/g;s/2/0010/g;s/3/0011/g;s/4/0100/g;s/5/0101/g;s/6/0110/g;s/7/0111/g;
 s/000(.)000(.)000(.)000(.)000(.)000(.)000(.)000(.)/\1\2\3\4\5\6\7\8/4;s/000(.)000(.)000(.)000(.)000(.)000(.)000(.)000(.)/\1\2\3\4\5\6\7\8/3
 s/000(.)000(.)000(.)000(.)000(.)000(.)000(.)000(.)/\1\2\3\4\5\6\7\8/2;s/000(.)000(.)000(.)000(.)000(.)000(.)000(.)000(.)/\1\2\3\4\5\6\7\8/
 s/00 / /;/^[01]{30} [01]{32}$/!q 1;1h;1!H;$t init
-N;s/(.*) .*\n(.*)/\1 \2/;/^1{30}/q 2;s/([01]*)01*/\110000000000000000000000000000000/;s/([01]{32})0* /\1 /;t hex;q 2
+N;s/\n$//;t init
+s/(.*) .*\n(.*)/\1 \2/;/^1{30}/q 2;s/([01]*)01*/\110000000000000000000000000000000/;s/([01]{32})0* /\1 /;t hex;q 2
 
 :init
 s/.*/INST \
@@ -337,7 +338,7 @@ s/^1100$/c/gm
 s/^1101$/d/gm
 s/^1110$/e/gm
 s/^1111$/f/gm
-s/\n//g;s/.{8}/&\n/g;s/\n*$//;p;q
+s/\n//g;s/.{8}/&\n/g;s/\n*$//;p;z;p;q
 
 :ecall
 /\n10001 00000000000000000000000000001010\n/q
@@ -352,6 +353,9 @@ s/\n//g;s/.{8}/&\n/g;s/\n*$//;p;q
 }
 /\n10001 00000000000000000000000000000001\n/{
 	G;h;s/.*\n01010 ([01]*)\n.*/\1/;t printSignedDec;q 2
+}
+/\n10001 00000000000000000000000000000101\n/{
+	G;h;b readDec
 }
 q 3
 
@@ -733,3 +737,45 @@ s/^(1[01]*)1(0*)$/−\1:1\2/;t printSignedDecInv;b printDec
 s/^−:/−/;t printDec
 s/0:/:1/;t printSignedDecInv
 s/1:/:0/;t printSignedDecInv
+
+:readDec
+$q 4;n
+/^[0-9]+$/!q 4
+s/^/\n/;t readDecDiv;q 2
+:readDecDiv
+s/\n0+/\n/;t readDecDiv
+s/\n$//;t readDecDone
+/^[^\n]{33,}/q 4
+s/^/0/
+/[13579]$/{
+	s/^0/1/
+	s/1$/0/;s/3$/2/;s/5$/4/;s/7$/6/;s/9$/8/
+	s/\n/\n:/;t readDecDivDigit;q 2
+}
+s/\n/\n:/;t readDecDivDigit;q 2
+:readDecDivDigit
+s/:$//;t readDecDiv
+s/:0/0:/;t readDecDivDigit
+s/:1/0:_/;t readDecDivDigit
+s/:2/1:/;t readDecDivDigit
+s/:3/1:_/;t readDecDivDigit
+s/:4/2:/;t readDecDivDigit
+s/:5/2:_/;t readDecDivDigit
+s/:6/3:/;t readDecDivDigit
+s/:7/3:_/;t readDecDivDigit
+s/:8/4:/;t readDecDivDigit
+s/:9/4:_/;t readDecDivDigit
+s/:_0/5:/;t readDecDivDigit
+s/:_1/5:_/;t readDecDivDigit
+s/:_2/6:/;t readDecDivDigit
+s/:_3/6:_/;t readDecDivDigit
+s/:_4/7:/;t readDecDivDigit
+s/:_5/7:_/;t readDecDivDigit
+s/:_6/8:/;t readDecDivDigit
+s/:_7/8:_/;t readDecDivDigit
+s/:_8/9:/;t readDecDivDigit
+s/:_9/9:_/;t readDecDivDigit
+q 2
+:readDecDone
+s/^/00000000000000000000000000000000/;s/^.*([01]{32})$/\1/
+G;s/^([01]*)\n(.*\n01010 )[01]*\n/\2\1\n/;h;s/.*~//;x;s/~.*/~/;t incPC;q 2
