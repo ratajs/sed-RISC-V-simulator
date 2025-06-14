@@ -19,6 +19,7 @@ Currently supported instructions:
 * and
 * or
 * xor
+* mul
 * srl
 * sra
 * sll

@@ -76,6 +76,7 @@ G;s/^INST [01]*(\n.*\nPC ([01]*)00\n.*~).*\n\2 ([01]*)\n.*/INST \3\1/;t decode;q
 /^INST 0000000[01]{10}111[01]{5}0110011\n/b and
 /^INST 0000000[01]{10}110[01]{5}0110011\n/b or
 /^INST 0000000[01]{10}100[01]{5}0110011\n/b xor
+/^INST 0000001[01]{10}000[01]{5}0110011\n/b mul
 /^INST 0000000[01]{10}101[01]{5}0110011\n/b srl
 /^INST 0100000[01]{10}101[01]{5}0110011\n/b sra
 /^INST 0000000[01]{10}001[01]{5}0110011\n/b sll
@@ -176,6 +177,12 @@ q 2
 s/(^INST 0000000([01]{5})([01]{5})100([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n(.*\n)?\3 ([01]*)\n)/\1ALU_A \8\nALU_B \6\nALU_DEST \4\5/;t ALU∨∨
 s/(^INST 0000000([01]{5})([01]{5})100([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\3 ([01]*)\n(.*\n)?\2 ([01]*)\n)/\1ALU_A \6\nALU_B \8\nALU_DEST \4\5/;t ALU∨∨
 s/(^INST 0000000([01]{5})\2100([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n)/\1ALU_A \5\nALU_B \5\nALU_DEST \3\4/;t ALU∨∨
+q 2
+
+:mul
+s/(^INST 0000001([01]{5})([01]{5})000([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n(.*\n)?\3 ([01]*)\n)/\1ALU_A \8\nALU_B \6\nALU_DEST \4\5/;t ALU⋅
+s/(^INST 0000001([01]{5})([01]{5})000([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\3 ([01]*)\n(.*\n)?\2 ([01]*)\n)/\1ALU_A \6\nALU_B \8\nALU_DEST \4\5/;t ALU⋅
+s/(^INST 0000001([01]{5})\2000([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n)/\1ALU_A \5\nALU_B \5\nALU_DEST \3\4/;t ALU⋅
 q 2
 
 :srl
@@ -388,6 +395,29 @@ s/(\nALU_B ):/\1/;t ALU+
 s/(\nALU_B [01]*)0:/\1:1/;t ALU−Inv
 s/(\nALU_B [01]*)1:/\1:0/;t ALU−Inv
 q 2
+
+:ALU⋅
+s/(\nALU_A [01]{32}\nALU_B [01]{32}\nALU_DEST ([^\n]*)\n.*\n\2 )[01]*/\100000000000000000000000000000000:/;t ALU⋅Bit;q 2
+:ALU⋅Bit
+s/(\nALU_B \nALU_DEST ([^\n]*)\n.*\n\2 ):/\1/;t ALU⋅Done
+s/(\nALU_B [01]*)0(\nALU_DEST ([^\n]*)\n.*\n\3 [01]*)([01]):/\1\2:\4/;t ALU⋅Bit
+s/(\nALU_A [01]{32})(\nALU_B [01]*)1(\nALU_DEST ([^\n]*)\n.*\n\4 [01]*):/\1:\2\3::/;t ALU⋅BitBit
+q 2
+:ALU⋅BitBit
+s/(\nALU_A [01]*):([01]*\nALU_B [01]*\nALU_DEST ([^\n]*)\n.*\n\3 ):([01]*)([01]):/\1\2\4:\5/;t ALU⋅Bit
+s/(\nALU_A [01]*)0:([01]*\nALU_B [01]*\nALU_DEST ([^\n]*)\n.*\n\3 [01]*)([01]):/\1:0\2:\4/;t ALU⋅BitBit
+s/(\nALU_A [01]*)1:([01]*\nALU_B [01]*\nALU_DEST ([^\n]*)\n.*\n\3 [01]*)0:/\1:1\2:1/;t ALU⋅BitBit
+s/(\nALU_A [01]*)1:([01]*\nALU_B [01]*\nALU_DEST ([^\n]*)\n.*\n\3 )(1*)1:/\1:1\2:\4:0/;t ALU⋅BitBitCarry
+s/(\nALU_A [01]*)1:([01]*\nALU_B [01]*\nALU_DEST ([^\n]*)\n.*\n\3 [01]*)0(1*)1:/\1:1\21:\4:0/;t ALU⋅BitBitCarry
+q 2
+:ALU⋅BitBitCarry
+s/(\nALU_DEST ([^\n]*)\n.*\n\2 [01]*)::/\1:/;t ALU⋅BitBit
+s/(\nALU_DEST ([^\n]*)\n.*\n\2 [01]*):1/\10:/;t ALU⋅BitBitCarry
+q 2
+:ALU⋅Done
+/\nALU_DEST MEM_ADDRESS\n/b MEM
+/\nALU_DEST PC\n/b fetch
+b incPC
 
 :ALU∧
 s/(\nALU_A [01]*\nALU_B [01]*\nALU_DEST ([^\n]*)\n.*\n\2 )[01]*/\1@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@/;t ALU∧Bit;q 2
@@ -747,7 +777,6 @@ s/^/\n/;t readDecDiv;q 2
 :readDecDiv
 s/\n0+/\n/;t readDecDiv
 s/\n$//;t readDecDone
-#/^−?[0-9]{32,}/q 4
 s/^(−?)/\10/
 /[13579]$/{
 	s/0/1/
