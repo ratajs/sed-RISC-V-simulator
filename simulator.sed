@@ -415,6 +415,7 @@ s/(\nALU_DEST ([^\n]*)\n.*\n\2 [01]*)::/\1:/;t ALU⋅BitBit
 s/(\nALU_DEST ([^\n]*)\n.*\n\2 [01]*):1/\10:/;t ALU⋅BitBitCarry
 q 2
 :ALU⋅Done
+s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 /\nALU_DEST MEM_ADDRESS\n/b MEM
 /\nALU_DEST PC\n/b fetch
 b incPC
