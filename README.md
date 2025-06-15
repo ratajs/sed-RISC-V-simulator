@@ -20,6 +20,7 @@ Currently supported instructions:
 * or
 * xor
 * mul
+* div
 * divu
 * remu
 * srl

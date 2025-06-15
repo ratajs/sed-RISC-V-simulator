@@ -77,6 +77,7 @@ G;s/^INST [01]*(\n.*\nPC ([01]*)00\n.*~).*\n\2 ([01]*)\n.*/INST \3\1/;t decode;q
 /^INST 0000000[01]{10}110[01]{5}0110011\n/b or
 /^INST 0000000[01]{10}100[01]{5}0110011\n/b xor
 /^INST 0000001[01]{10}000[01]{5}0110011\n/b mul
+/^INST 0000001[01]{10}100[01]{5}0110011\n/b div
 /^INST 0000001[01]{10}101[01]{5}0110011\n/b divu
 /^INST 0000001[01]{10}111[01]{5}0110011\n/b remu
 /^INST 0000000[01]{10}101[01]{5}0110011\n/b srl
@@ -185,6 +186,12 @@ q 2
 s/(^INST 0000001([01]{5})([01]{5})000([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n(.*\n)?\3 ([01]*)\n)/\1ALU_A \8\nALU_B \6\nALU_DEST \4\5/;t ALU⋅
 s/(^INST 0000001([01]{5})([01]{5})000([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\3 ([01]*)\n(.*\n)?\2 ([01]*)\n)/\1ALU_A \6\nALU_B \8\nALU_DEST \4\5/;t ALU⋅
 s/(^INST 0000001([01]{5})\2000([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n)/\1ALU_A \5\nALU_B \5\nALU_DEST \3\4/;t ALU⋅
+q 2
+
+:div
+s/(^INST 0000001([01]{5})([01]{5})100([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n(.*\n)?\3 ([01]*)\n)/\1ALU_A \8\nALU_B \6\nALU_DEST \4\5/;t ALU∶s
+s/(^INST 0000001([01]{5})([01]{5})100([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\3 ([01]*)\n(.*\n)?\2 ([01]*)\n)/\1ALU_A \6\nALU_B \8\nALU_DEST \4\5/;t ALU∶s
+s/(^INST 0000001([01]{5})\2100([01]{5})0110011\n\n)ALU_A [01]*\nALU_B [01]*\nALU_DEST [^\n]*(\n.*\n\2 ([01]*)\n)/\1ALU_A \5\nALU_B \5\nALU_DEST \3\4/;t ALU∶s
 q 2
 
 :divu
@@ -435,28 +442,54 @@ s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 b incPC
 
 :ALU∶
-s/(\nALU_A [01]{32}\nALU_B )(0*)([01]*\nALU_DEST ([^\n]*)\n.*\n\4 )[01]*/\1\3:0\2/;t ALU∶−;q 2
+s/(\nALU_A −?[01]{32}\nALU_B )(0*)([01]*\nALU_DEST ([^\n]*)\n.*\n\4 )[01]*/\1\3:0\2/;t ALU∶−;q 2
 :ALU∶−
-s/\nALU_B [01]{33}\n/\nALU_B \n/;t ALU∶Done
-s/(\nALU_A ([01]*)0[01]*\nALU_B )(\21[01]*\nALU_DEST ([^\n]*)\n.*\n\4 [01]*):0/\10\30:/;t ALU∶−
-s/(\nALU_A )([01]*\nALU_B )([01]*\nALU_DEST ([^\n]*)\n.*\4 [01]*):0/\1:\2:\31:/;t ALU∶−Bit;q 2
+s/\nALU_B [01]{33}\n/\nALU_B \n/;t ALU∶Final
+s/(\nALU_A −?([01]*)0[01]*\nALU_B )(\21[01]*\nALU_DEST ([^\n]*)\n.*\n\4 [01]*):0/\10\30:/;t ALU∶−
+s/(\nALU_A −?)([01]*\nALU_B )([01]*\nALU_DEST ([^\n]*)\n.*\4 [01]*):0/\1:\2:\31:/;t ALU∶−Bit;q 2
 :ALU∶−Bit
-s/(\nALU_A [01]*):([01]*\nALU_B )([01]*):\n/\1\20\3\n/;t ALU∶−
-s/(\nALU_A [01]*):([01])([01]*\nALU_B [01]*):0/\1\2:\30:/;t ALU∶−Bit
-s/(\nALU_A [01]*):1([01]*\nALU_B [01]*):1/\10:\21:/;t ALU∶−Bit
-s/(\nALU_A [01]*)1(0*):0([01]*\nALU_B [01]*):1/\10:\2:1:\31:/;t ALU∶−BitCarry
+s/(\nALU_A −?[01]*):([01]*\nALU_B )([01]*):\n/\1\20\3\n/;t ALU∶−
+s/(\nALU_A −?[01]*):([01])([01]*\nALU_B [01]*):0/\1\2:\30:/;t ALU∶−Bit
+s/(\nALU_A −?[01]*):1([01]*\nALU_B [01]*):1/\10:\21:/;t ALU∶−Bit
+s/(\nALU_A −?[01]*)1(0*):0([01]*\nALU_B [01]*):1/\10:\2:1:\31:/;t ALU∶−BitCarry
 q 2
 :ALU∶−BitCarry
-s/(\nALU_A [01]*)::/\1/;t ALU∶−Bit
-s/(\nALU_A [01]*):0/\11:/;t ALU∶−BitCarry
+s/(\nALU_A −?[01]*)::/\1/;t ALU∶−Bit
+s/(\nALU_A −?[01]*):0/\11:/;t ALU∶−BitCarry
+q 2
+:ALU∶Final
+s/(\nALU_DEST ([^\n]*)\n.*\2 )/\100000000000000000000000000000000/;s/(\nALU_DEST ([^\n]*)\n.*\2 )[01]*([01]{32}):\n/\1\3\n/;t ALU∶InvIf−;q 2
+:ALU∶InvIf−
+s/(\nALU_A )−([01]*\nALU_B \nALU_DEST ([^\n]*)\n.*\n\3 [01]*)1(0*\n)/\1\2:1\4/;t ALU∶Inv;b ALU∶Done
+:ALU∶Inv
+s/(\nALU_DEST ([^\n]*)\n.*\n\2 ):/\1/;t ALU∶Done
+s/(\nALU_DEST ([^\n]*)\n.*\n\2 [01]*)0:/\1:1/;t ALU∶Inv
+s/(\nALU_DEST ([^\n]*)\n.*\n\2 [01]*)1:/\1:0/;t ALU∶Inv
 q 2
 :ALU∶Done
-s/(\nALU_DEST ([^\n]*)\n.*\2 )/\100000000000000000000000000000000/
-s/(\nALU_DEST ([^\n]*)\n.*\2 )[01]*([01]{32}):\n/\1\3\n/
+s/(\nALU_A )−/\1/
 s/\n00000 [01]*\n/\n00000 00000000000000000000000000000000\n/
 /\nALU_DEST MEM_ADDRESS\n/b MEM
 /\nALU_DEST PC\n/b fetch
 b incPC
+
+:ALU∶s
+/\nALU_B 00000000000000000000000000000000\n/b ALU∶
+s/(\nALU_A −?1[01]*)1(0*\n)/\1:1\2/;t ALU∶sInvA
+s/(\nALU_B 1[01]*)1(0*\n)/\1:1\2/;t ALU∶sInvB
+b ALU∶
+:ALU∶sInvA
+s/(\nALU_A ):/\1−/;t ALU∶s
+s/(\nALU_A )−:/\1/;t ALU∶s
+s/(\nALU_A −?[01]*)0:/\1:1/;t ALU∶sInvA
+s/(\nALU_A −?[01]*)1:/\1:0/;t ALU∶sInvA
+q 2
+:ALU∶sInvB
+s/(\nALU_A )([01]*\nALU_B ):/\1−\2/;t ALU∶s
+s/(\nALU_A )−([01]*\nALU_B ):/\1\2/;t ALU∶s
+s/(\nALU_B [01]*)0:/\1:1/;t ALU∶sInvB
+s/(\nALU_B [01]*)1:/\1:0/;t ALU∶sInvB
+q 2
 
 :ALUmod
 s/(\nALU_A ([01]{32})\nALU_B )0*([01]*\nALU_DEST ([^\n]*)\n.*\n\4 )[01]*/\1\3\2/;t ALUmod−;q 2
