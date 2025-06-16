@@ -55,5 +55,7 @@ Strings are zero‐terminated in UTF-32. To avoid having the complete Unicode ta
 * Latin-1 Supplement
 * Latin Extended-A
 * General Punctuation
+* Superscripts and Subscripts
+* Letterlike Symbols
 * Arrows
 * Mathematical Operators
